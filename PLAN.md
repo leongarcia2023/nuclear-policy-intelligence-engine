@@ -32,9 +32,9 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** ingests current-session bills for the pilot states into SQLite; second run fetches only changed bills (assert via test/log); delta logic unit-tested. Commit.
 
 ## Phase 2 — Nuclear impact ontology + classifier (small LLM surface)
-- [ ] Encode the ontology as a **versioned** module (`ontology.ts`, export `ONTOLOGY_VERSION`): direct, indirect, and adversarial vectors (siting, cost recovery/CWIP, decommissioning, ZEC/fleet preservation, moratoria; clean-standard eligibility, interconnection/transmission, large-load/co-location, property-tax/PILOT, rate recovery, water/thermal, workforce, generation tax, "definitions trap").
-- [ ] Classifier: bill text → strict JSON `{ relevant, confidence, is_indirect, model_bill_risk, headline, impact_vectors[{vector,direction,rationale}] }`. Zod-validate; reject/repair invalid JSON.
-- [ ] **Cache** keyed by `(sha256(bill_text), ONTOLOGY_VERSION, PROMPT_VERSION)` so re-runs cost nothing.
+- [x] Encode the ontology as a **versioned** module (`ontology.ts`, export `ONTOLOGY_VERSION`): direct, indirect, and adversarial vectors (siting, cost recovery/CWIP, decommissioning, ZEC/fleet preservation, moratoria; clean-standard eligibility, interconnection/transmission, large-load/co-location, property-tax/PILOT, rate recovery, water/thermal, workforce, generation tax, "definitions trap").
+- [x] Classifier: bill text → strict JSON `{ relevant, confidence, is_indirect, model_bill_risk, headline, impact_vectors[{vector,direction,rationale}] }`. Zod-validate; reject/repair invalid JSON.
+- [x] **Cache** keyed by `(sha256(bill_text), ONTOLOGY_VERSION, PROMPT_VERSION)` so re-runs cost nothing.
 **Acceptance:** classifies the gold set (Phase 7 seed); 100% schema-valid; second run makes zero API calls (cache hit, assert in test). Commit.
 
 ## Phase 3 — Materiality scoring (deterministic aggregate)

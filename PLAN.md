@@ -68,10 +68,10 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** `npm run eval` runs against the gold set, prints the metric table, and fails the build on regression. It must test correctness, not output shape. Commit.
 
 ## Phase 8 — UI ("Signal Desk", restrained)
-- [ ] Operator queue: bills sorted by materiality, with an unmistakable **"INDIRECT — keyword search would miss this"** flag.
-- [ ] Bill detail: memo + score breakdown (each component's reasoning visible) + override control (writes to the corpus).
-- [ ] Campaign view: bills grouped by detected campaign across states.
-- [ ] Cool, operator-precision palette. No decorative overclaiming; restraint is the brief.
+- [x] Operator queue: bills sorted by materiality, with an unmistakable **"INDIRECT — keyword search would miss this"** flag.
+- [x] Bill detail: memo + score breakdown (each component's reasoning visible) + override control (writes to the corpus).
+- [x] Campaign view: bills grouped by detected campaign across states.
+- [x] Cool, operator-precision palette. No decorative overclaiming; restraint is the brief.
 **Acceptance:** `npm run dev` renders the queue from SQLite; clicking a bill shows memo, per-component scores, and a working override. Commit.
 
 ## Phase 9 — Docs & handoff

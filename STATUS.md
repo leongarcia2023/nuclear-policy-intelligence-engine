@@ -3,7 +3,7 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 8 — UI Signal Desk (starting)
+- **Active phase:** Phase 9 — Docs & handoff (starting)
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
@@ -16,7 +16,7 @@ _Living status log. Updated after every phase._
 - [x] Phase 5 — Judgment corpus; versioned records, overrides retained in history & preserved across re-runs, `npm run export:corpus` → JSONL
 - [x] Phase 6 — Memo generation (templated, deterministic, cached); position+why+citations; weekly digest; stable output; Ribbit Power Letter voice
 - [x] Phase 7 — Eval harness; 16 gold cases (6 anchors + 10 hand-authored), recall-on-indirect 100% (floor 0.80), FP 0%, vector/band/direction 100%; regression gate vs committed baseline
-- [ ] Phase 8 — UI ("Signal Desk")
+- [x] Phase 8 — Signal Desk UI; queue sorted by materiality w/ INDIRECT flag, bill detail (memo + per-component score reasoning + working override→corpus), campaign view; `next build` clean
 - [ ] Phase 9 — Docs & handoff
 
 ## Assumptions (decisions made without asking, per autonomy rule)

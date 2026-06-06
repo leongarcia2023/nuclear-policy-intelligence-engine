@@ -1,7 +1,7 @@
 import type { DB } from "../db";
 import type { Classification } from "../classify/schema";
 import type { MaterialityScore } from "../score/schema";
-import { CorpusRecord, recordId } from "./schema";
+import { CorpusRecord, recordId, type HistoryItem } from "./schema";
 import { Label, modelLabel } from "./label";
 
 type Row = {
@@ -136,7 +136,7 @@ export function upsertFromPipeline(
     score,
     memo: args.memo ?? existing?.memo ?? null,
     history: existing?.history ?? [
-      { label: ml, source: "model", at: now },
+      { label: ml, source: "model", at: now } as HistoryItem,
     ],
     created_at: existing?.created_at ?? now,
     updated_at: now,
@@ -165,7 +165,7 @@ export function applyOverride(
   // Merge the correction onto the current active label.
   const merged = Label.parse({ ...existing.active_label, ...args.correction });
 
-  const history = [
+  const history: HistoryItem[] = [
     ...existing.history,
     {
       label: existing.active_label,

@@ -3,13 +3,13 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 0 — Scaffold (starting)
+- **Active phase:** Phase 2 — Ontology + classifier (starting)
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
 ## Phase checklist
-- [ ] Phase 0 — Scaffold
-- [ ] Phase 1 — LegiScan ingestion (deterministic, delta logic)
+- [x] Phase 0 — Scaffold (dev boots HTTP 200, tests green, .env gitignored)
+- [x] Phase 1 — LegiScan ingestion (deterministic, delta logic; 2nd run fetched 0/6)
 - [ ] Phase 2 — Ontology + pluggable classifier (deterministic default)
 - [ ] Phase 3 — Materiality scoring
 - [ ] Phase 4 — Cross-state campaign detection (TF-IDF/MinHash)

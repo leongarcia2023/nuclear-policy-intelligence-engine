@@ -17,18 +17,18 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 ---
 
 ## Phase 0 — Scaffold
-- [ ] Init Next.js + TypeScript + Tailwind app in this directory.
-- [ ] Add Vitest, ESLint, Prettier, Zod, better-sqlite3 (or sql.js).
-- [ ] Create `.env.example` with `ANTHROPIC_API_KEY=` and `LEGISCAN_API_KEY=`. Add `.env` to `.gitignore`.
-- [ ] Folder structure: `src/ingest`, `src/classify`, `src/score`, `src/campaign`, `src/corpus`, `src/memo`, `src/eval`, `src/db`, `app/`.
-- [ ] Create `STATUS.md` and `ARCHITECTURE.md` (keep both updated as you build).
+- [x] Init Next.js + TypeScript + Tailwind app in this directory.
+- [x] Add Vitest, ESLint, Prettier, Zod, better-sqlite3 (or sql.js).
+- [x] Create `.env.example` with `ANTHROPIC_API_KEY=` and `LEGISCAN_API_KEY=`. Add `.env` to `.gitignore`.
+- [x] Folder structure: `src/ingest`, `src/classify`, `src/score`, `src/campaign`, `src/corpus`, `src/memo`, `src/eval`, `src/db`, `app/`.
+- [x] Create `STATUS.md` and `ARCHITECTURE.md` (keep both updated as you build).
 **Acceptance:** `npm run dev` boots; `npm test` runs (empty suite OK); `.env` is gitignored. Commit.
 
 ## Phase 1 — LegiScan ingestion (deterministic)
-- [ ] Client wrapping `getMasterListRaw` (returns per-bill `change_hash`), `getBill`, `getBillText`. Rate-limit aware.
-- [ ] **Delta logic:** persist `change_hash` per bill; on re-run, only fetch bills whose hash changed. Unit-test with fixtures.
-- [ ] `Bill` schema (zod) + SQLite table: id, state, number, title, sponsors, committee, stage, last_action, history, full_text, change_hash, fetched_at.
-- [ ] Configurable state list + session; default to a 5-state pilot (TX, OH, PA, CA, IL).
+- [x] Client wrapping `getMasterListRaw` (returns per-bill `change_hash`), `getBill`, `getBillText`. Rate-limit aware.
+- [x] **Delta logic:** persist `change_hash` per bill; on re-run, only fetch bills whose hash changed. Unit-test with fixtures.
+- [x] `Bill` schema (zod) + SQLite table: id, state, number, title, sponsors, committee, stage, last_action, history, full_text, change_hash, fetched_at.
+- [x] Configurable state list + session; default to a 5-state pilot (TX, OH, PA, CA, IL).
 **Acceptance:** ingests current-session bills for the pilot states into SQLite; second run fetches only changed bills (assert via test/log); delta logic unit-tested. Commit.
 
 ## Phase 2 — Nuclear impact ontology + classifier (small LLM surface)

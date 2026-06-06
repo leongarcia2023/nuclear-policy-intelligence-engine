@@ -69,12 +69,19 @@ function economicMagnitude(i: ScoreInputs): Component {
       reasons.push(why);
     }
   };
+  // Quantities appear as digits OR spelled out in real statutes — match both.
+  const PCT = /\d+\s*%|\b(ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|one hundred|hundred)\s+percent\b/i;
+  const MW = /\d{2,}\s*(mw|megawatts)|\b(hundred|thousand|one hundred)\s+megawatts?\b/i;
   add(/construction work in progress|\bCWIP\b|advance recovery/i.test(text), 20, "advance cost recovery / CWIP");
-  add(/\d+\s*%/.test(text), 25, "percentage procurement mandate");
-  add(/\d{2,}\s*(mw|megawatts)/i.test(text), 10, "MW-scale threshold");
+  add(PCT.test(text), 25, "percentage procurement mandate");
+  add(/shall procure|procurement mechanism|must-procure|procurement mandate/i.test(text), 15, "procurement mandate");
+  add(MW.test(text), 10, "MW-scale threshold");
   add(/ad valorem|abatement|payment in lieu/i.test(text), 15, "tax abatement / PILOT");
   add(/shall not approve[^.]*(thermal|non-renewable|cost recovery)/i.test(text), 20, "cost-recovery bar");
   add(/grid-service charge|behind[- ]the[- ]meter|co-?locat/i.test(text), 15, "behind-the-meter / co-location cost surface");
+  add(/zero-emission credit|\bZEC\b|fleet preservation|premature retirement/i.test(text), 25, "fleet-preservation subsidy");
+  add(/resource adequacy|reserve margin|firm capacity|qualifying capacity/i.test(text), 15, "reliability / firm-capacity mandate");
+  add(/repeal of (the )?(prohibition|moratorium|ban)|moratorium|prohibition on/i.test(text), 15, "ban / moratorium / repeal — opens or closes the market");
   add(i.classification.direction !== "neutral", 10, `directional impact (${i.classification.direction})`);
   return {
     score: clamp(s),
@@ -98,7 +105,7 @@ function breadth(i: ScoreInputs): Component {
     reasons.push("template/model-bill pattern");
   }
   if (
-    /commission shall|load-serving entit|retail (load|sales)|electric distribution utilit|statewide|each (utility|customer)/i.test(
+    /commission (shall|may)|load-serving entit|retail (load|sales)|electric distribution utilit|statewide|each (electric )?(utility|customer)|general assembly/i.test(
       text,
     )
   ) {

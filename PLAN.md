@@ -62,9 +62,9 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 
 ## Phase 7 — Eval harness (CORRECTNESS, not formatting)
 > This is the explicit fix for the known prior weakness: the old harness validated formatting, not correctness. This one validates correctness.
-- [ ] Build a gold set of ~25–40 hand-labeled bills. Seed with the 4 canonical cases (TX direct, OH indirect-include, CA adversarial-exclude, PA data-center) and **expand by pulling real bills via LegiScan**, hand-labeling: `relevant?`, `is_indirect?`, primary vectors, expected position, materiality band.
-- [ ] Metrics: relevance precision/recall — and **recall on `is_indirect` bills specifically** (the catch that justifies the product), vector accuracy, materiality-band agreement, confidence calibration.
-- [ ] `npm run eval` prints metrics and **exits nonzero if recall-on-indirect < 0.80** (regression gate).
+- [x] Build a gold set of ~25–40 hand-labeled bills. Seed with the 4 canonical cases (TX direct, OH indirect-include, CA adversarial-exclude, PA data-center) and **expand by pulling real bills via LegiScan**, hand-labeling: `relevant?`, `is_indirect?`, primary vectors, expected position, materiality band.
+- [x] Metrics: relevance precision/recall — and **recall on `is_indirect` bills specifically** (the catch that justifies the product), vector accuracy, materiality-band agreement, confidence calibration.
+- [x] `npm run eval` prints metrics and **exits nonzero if recall-on-indirect < 0.80** (regression gate).
 **Acceptance:** `npm run eval` runs against the gold set, prints the metric table, and fails the build on regression. It must test correctness, not output shape. Commit.
 
 ## Phase 8 — UI ("Signal Desk", restrained)

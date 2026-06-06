@@ -128,11 +128,12 @@ export const INDIRECT_VECTORS: OntologyVector[] = [
     kind: "indirect",
     title: "Clean-standard eligibility",
     tells: [
+      /(eligible|qualifying|renewable|clean|carbon-?free|zero-?carbon|firm)[\w ]{0,24}(resource|source)['"]?\s+means/i,
       /eligible (clean|renewable|zero-?carbon|firm) resource/i,
-      /(renewable|clean energy|alternative energy) portfolio standard|\bRPS\b|\bCES\b/i,
+      /(renewable|clean energy|alternative energy|renewable energy) portfolio standard|portfolio standard|clean energy standard|renewable energy standard|\bRPS\b|\bCES\b/i,
       /zero-?carbon|zero direct carbon/i,
       /firm,?\s*(and\s*)?dispatchable|dispatchable output/i,
-      /qualifying (technologies|resources)|eligible resource means/i,
+      /qualifying (technologies|resources|capacity)|eligible resource means/i,
     ],
   },
   {
@@ -144,7 +145,7 @@ export const INDIRECT_VECTORS: OntologyVector[] = [
       /cluster study/i,
       /transmission planning/i,
       /large-generator interconnection/i,
-      /interconnection (rules|standards)/i,
+      /\binterconnection\b/i,
     ],
   },
   {
@@ -179,6 +180,7 @@ export const INDIRECT_VECTORS: OntologyVector[] = [
       /cost recovery/i,
       /securitization/i,
       /prudenc(e|y|ently)/i,
+      /cost shift|shifts? costs?|shift costs to/i,
     ],
   },
   {

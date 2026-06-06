@@ -12,7 +12,7 @@ import {
 } from "../ontology";
 
 /** Bump when the rules change so the cache invalidates cleanly. */
-export const RULES_VERSION = "rules-v1";
+export const RULES_VERSION = "rules-v3";
 
 type VectorHit = { vector: OntologyVector; evidence: string };
 
@@ -25,9 +25,9 @@ function firstMatch(tells: RegExp[], text: string): string | null {
   return null;
 }
 
-/** Grab the enumerated clause of the first "... resource means ..." definition. */
+/** Grab the enumerated clause of the first "... (resource|source|generation) means ..." definition. */
 function definitionClause(text: string): string | null {
-  const m = text.match(/resource['"]?\s+means\b([^.]*)\./i);
+  const m = text.match(/(?:resource|source|generation)['"]?\s+means\b([^.]*)\./i);
   return m ? m[1].trim() : null;
 }
 
@@ -54,9 +54,16 @@ function analyzeDefinitions(text: string): DefnAnalysis {
   const qualifyingRe =
     /nuclear|firm|dispatchable|zero-?carbon|baseload|non-?emitting/i;
 
-  const inclusion = clause ? inclusionRe.test(clause) : false;
-  if (inclusion && clause) {
-    const m = clause.match(inclusionRe);
+  const clauseInclusion = clause ? inclusionRe.test(clause) : false;
+  // Strong firm-clean framing can also appear OUTSIDE a formal "means" clause
+  // (e.g. an IRP statute that "shall consider firm, dispatchable, zero-carbon
+  // resources"). Treat that as inclusion too.
+  const globalInclusion =
+    /firm,?\s*(and\s*)?dispatchable/i.test(text) &&
+    /zero-?carbon|zero direct carbon|carbon-?free|non-?emitting/i.test(text);
+  const inclusion = clauseInclusion || globalInclusion;
+  if (inclusion) {
+    const m = (clause ?? text).match(inclusionRe);
     evidence.push(`eligibility framed as "${m?.[0]}" — nuclear qualifies`);
   }
 
@@ -220,7 +227,7 @@ export class DeterministicProvider implements ClassifierProvider {
 
     // model_bill_risk: portable, definition/threshold-driven statutory language.
     const templateTell =
-      /resource['"]?\s+means|["'][^"']{0,40}["']\s+means|\d+\s*%|\d{2,}\s*(mw|megawatts)|siting office|advance recovery/i.test(
+      /(resource|source|generation)['"]?\s+means|["'][^"']{0,40}["']\s+means|\d+\s*%|\b\w+\s+percent\b|\d{2,}\s*(mw|megawatts)|siting office|advance recovery|zero-emission credit|\bZEC\b|large load/i.test(
         text,
       );
     const modelBillRisk = relevant && templateTell;

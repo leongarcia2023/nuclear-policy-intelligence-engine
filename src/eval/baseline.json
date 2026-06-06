@@ -1,0 +1,8 @@
+{
+  "recall_on_indirect": 1,
+  "false_positive_rate": 0,
+  "vector_accuracy": 1,
+  "band_agreement": 1,
+  "relevance_f1": 1,
+  "provider": "deterministic"
+}

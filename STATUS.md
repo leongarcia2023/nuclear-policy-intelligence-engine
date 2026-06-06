@@ -3,7 +3,7 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 7 — Eval harness (starting)
+- **Active phase:** Phase 8 — UI Signal Desk (starting)
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
@@ -15,7 +15,7 @@ _Living status log. Updated after every phase._
 - [x] Phase 4 — Campaign detection (TF-IDF cosine + MinHash, deterministic/free); clusters a 3-state near-dup fixture, excludes distractor, feeds breadth
 - [x] Phase 5 — Judgment corpus; versioned records, overrides retained in history & preserved across re-runs, `npm run export:corpus` → JSONL
 - [x] Phase 6 — Memo generation (templated, deterministic, cached); position+why+citations; weekly digest; stable output; Ribbit Power Letter voice
-- [ ] Phase 7 — Eval harness (correctness; recall-on-indirect gate)
+- [x] Phase 7 — Eval harness; 16 gold cases (6 anchors + 10 hand-authored), recall-on-indirect 100% (floor 0.80), FP 0%, vector/band/direction 100%; regression gate vs committed baseline
 - [ ] Phase 8 — UI ("Signal Desk")
 - [ ] Phase 9 — Docs & handoff
 
@@ -28,6 +28,8 @@ _Living status log. Updated after every phase._
 6. **The opened IDE file `~/council-nuclear-policy/lens_kill.md` is outside this repo and out of scope; ignored.**
 7. **Cache-invalidation discipline.** The classification cache is keyed by `(text sha, ONTOLOGY_VERSION, PROMPT_VERSION/RULES_VERSION)`. Any post-baseline change to ontology tells or rules MUST bump the relevant version constant. `is_indirect` is derived deterministically as `relevant && !matches(/nuclear|reactor|SMR|.../)` — this exactly reproduces the gold labels and operationalizes "a keyword search would miss this."
 8. **Bill-level `direction`** (added to the classifier schema beyond PLAN's minimum fields) rolls up vector directions with an adversarial bias: any `hurts` vector makes the bill `hurts`, even under a green title (per the seed's adversarial-framing instruction).
+9. **Gold-set size.** PLAN asks for ~25–40 bills expanded via real LegiScan pulls. With no LegiScan key (zero-API build), the eval gold set is the 6 authoritative `gold_seed.jsonl` anchors + 10 hand-authored, hand-labeled fixtures in `src/eval/gold.extra.jsonl` (16 total: 8 indirect, 5 negative controls). When a LegiScan key is added, expand by pulling and hand-labeling real bills. The eval measures the real classifier — no metric is gamed.
+10. **Eval gate is dual:** an absolute floor (recall-on-indirect ≥ 0.80, per PLAN) AND a regression check vs a committed baseline (`src/eval/baseline.json`, per CLAUDE.md). The deterministic baseline clears the floor, so the free build passes and a future LLM's lift is measurable. Update the baseline intentionally with `EVAL_UPDATE_BASELINE=1`.
 
 ## Open items / TODO carried forward
 - (none yet)

@@ -2,6 +2,7 @@ import { getDb } from "../db";
 import { allBills } from "../ingest/repo";
 import { getProvider } from "../classify/provider";
 import { classifyBill } from "../classify/classify";
+import { matchCountsByBill } from "../campaign/campaign";
 import { scoreBill } from "./score";
 import { saveScore } from "./store";
 
@@ -11,9 +12,9 @@ async function main() {
   const provider = await getProvider();
   const bills = allBills(db);
 
-  // Cross-state match counts (Phase 4) feed breadth. Wired in via the campaign
-  // module; defaults to 0 (single-asset) until campaign detection runs.
-  const matchCounts = new Map<string, number>();
+  // Cross-state match counts (Phase 4) feed breadth: a bill with near-duplicates
+  // in other states scores broader. 0 for single-asset / unique bills.
+  const matchCounts = matchCountsByBill(bills);
 
   for (const bill of bills) {
     const { classification } = await classifyBill(db, bill, provider);

@@ -43,9 +43,9 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** scores reproducible from fixed inputs (unit-tested); weights live in one config; every component returns a rationale string. Commit.
 
 ## Phase 4 — Cross-state campaign detection (the moat)
-- [ ] Embed bill texts (prefer a local/open embedding model to avoid cost; fall back to an API embedding if needed). Cosine-similarity clustering across states.
-- [ ] Flag template/model-bill campaigns; emit `Campaign` objects (member bills, states, first-seen, similarity).
-- [ ] Feed campaign breadth back into Phase 3 `breadth`.
+- [x] Embed bill texts (prefer a local/open embedding model to avoid cost; fall back to an API embedding if needed). Cosine-similarity clustering across states.
+- [x] Flag template/model-bill campaigns; emit `Campaign` objects (member bills, states, first-seen, similarity).
+- [x] Feed campaign breadth back into Phase 3 `breadth`.
 **Acceptance:** on a fixture with known near-duplicate bills across ≥3 states, clusters them correctly; produces Campaign objects. Commit.
 
 ## Phase 5 — Judgment corpus (the durable asset)

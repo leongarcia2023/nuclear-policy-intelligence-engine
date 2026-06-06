@@ -1,0 +1,7 @@
+node_modules
+.next
+out
+data
+*.db
+package-lock.json
+gold_seed.jsonl

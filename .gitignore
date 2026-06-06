@@ -1,0 +1,26 @@
+# dependencies
+/node_modules
+
+# next
+/.next
+/out
+
+# env — never commit secrets
+.env
+.env.local
+.env.*.local
+
+# local data store
+/data
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# build / cache
+/coverage
+*.tsbuildinfo
+next-env.d.ts
+
+# os
+.DS_Store

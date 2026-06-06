@@ -1,0 +1,45 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Write(*)",
+      "Edit(*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(touch:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(sed:*)",
+      "Bash(find:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(sqlite3:*)",
+      "Bash(curl:*)",
+      "Bash(chmod:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(git push:*)",
+      "Read(.env)",
+      "Read(~/.ssh/**)",
+      "Read(~/.aws/**)",
+      "Read(**/nuclear-deployment-copilot/**)",
+      "Edit(**/nuclear-deployment-copilot/**)",
+      "Write(**/nuclear-deployment-copilot/**)",
+      "Bash(*nuclear-deployment-copilot*)"
+    ]
+  }
+}

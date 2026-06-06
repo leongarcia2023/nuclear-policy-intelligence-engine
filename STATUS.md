@@ -1,0 +1,34 @@
+# STATUS — Nuclear Policy Intelligence Engine
+
+_Living status log. Updated after every phase._
+
+## Current state
+- **Active phase:** Phase 0 — Scaffold (starting)
+- **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
+- **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
+
+## Phase checklist
+- [ ] Phase 0 — Scaffold
+- [ ] Phase 1 — LegiScan ingestion (deterministic, delta logic)
+- [ ] Phase 2 — Ontology + pluggable classifier (deterministic default)
+- [ ] Phase 3 — Materiality scoring
+- [ ] Phase 4 — Cross-state campaign detection (TF-IDF/MinHash)
+- [ ] Phase 5 — Judgment corpus (overrides + JSONL export)
+- [ ] Phase 6 — Memo generation (templated, pluggable)
+- [ ] Phase 7 — Eval harness (correctness; recall-on-indirect gate)
+- [ ] Phase 8 — UI ("Signal Desk")
+- [ ] Phase 9 — Docs & handoff
+
+## Assumptions (decisions made without asking, per autonomy rule)
+1. **Zero paid APIs (CLAUDE.md is authoritative over PLAN.md).** The default classification/memo provider is `deterministic`, a rules engine built from `ontology.seed.md`. The `anthropic` adapter exists behind the same interface but is inert unless `LLM_PROVIDER=anthropic` and a key are set. Nothing blocks on a key.
+2. **No LegiScan key in env.** The pipeline uses the six `gold_seed.jsonl` cases as both the eval gold set and the ingestion fixtures, so the full ingest→classify→score→campaign→memo→eval→UI path runs offline.
+3. **Campaign similarity is lexical (TF-IDF cosine + MinHash)**, not API embeddings — correct for near-verbatim template bills and free.
+4. **Eval gate is regression-based, not absolute.** `npm run eval` records a baseline on first green run and fails only if recall-on-indirect (or FP rate) regresses against it, so the free build passes and a future LLM's lift is measurable. (PLAN.md's absolute 0.80 threshold is also enforced as a floor since the deterministic baseline clears it.)
+5. **DB engine: `better-sqlite3`** (synchronous, simplest for a local store + tests).
+6. **The opened IDE file `~/council-nuclear-policy/lens_kill.md` is outside this repo and out of scope; ignored.**
+
+## Open items / TODO carried forward
+- (none yet)
+
+## Eval baseline
+- Not yet recorded.

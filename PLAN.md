@@ -38,8 +38,8 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** classifies the gold set (Phase 7 seed); 100% schema-valid; second run makes zero API calls (cache hit, assert in test). Commit.
 
 ## Phase 3 — Materiality scoring (deterministic aggregate)
-- [ ] Component scorers (each 0–100, each emits its reasoning): `passage_likelihood` (sponsor seniority/committee role/chamber control/stage heuristics + bounded LLM estimate), `economic_magnitude` (bounded LLM estimate), `breadth` (incl. cross-state match count from Phase 4), `urgency` (deterministic from stage).
-- [ ] Weighted aggregate with **documented, configurable weights**. Reproducible given fixed inputs.
+- [x] Component scorers (each 0–100, each emits its reasoning): `passage_likelihood` (sponsor seniority/committee role/chamber control/stage heuristics + bounded LLM estimate), `economic_magnitude` (bounded LLM estimate), `breadth` (incl. cross-state match count from Phase 4), `urgency` (deterministic from stage).
+- [x] Weighted aggregate with **documented, configurable weights**. Reproducible given fixed inputs.
 **Acceptance:** scores reproducible from fixed inputs (unit-tested); weights live in one config; every component returns a rationale string. Commit.
 
 ## Phase 4 — Cross-state campaign detection (the moat)

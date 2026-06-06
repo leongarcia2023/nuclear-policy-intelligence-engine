@@ -3,7 +3,7 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 3 — Materiality scoring (starting)
+- **Active phase:** Phase 4 — Cross-state campaign detection (starting)
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
@@ -11,7 +11,7 @@ _Living status log. Updated after every phase._
 - [x] Phase 0 — Scaffold (dev boots HTTP 200, tests green, .env gitignored)
 - [x] Phase 1 — LegiScan ingestion (deterministic, delta logic; 2nd run fetched 0/6)
 - [x] Phase 2 — Ontology + pluggable classifier; all 6 gold cases correct incl. OH indirect-catch & NY nuclear-medicine reject; 2nd run 0 provider calls
-- [ ] Phase 3 — Materiality scoring
+- [x] Phase 3 — Materiality scoring; 4 relevant gold bills → high, 2 negatives → none; reproducible; weights in one config (seed defaults)
 - [ ] Phase 4 — Cross-state campaign detection (TF-IDF/MinHash)
 - [ ] Phase 5 — Judgment corpus (overrides + JSONL export)
 - [ ] Phase 6 — Memo generation (templated, pluggable)

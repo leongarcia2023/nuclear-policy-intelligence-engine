@@ -49,9 +49,9 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** on a fixture with known near-duplicate bills across ≥3 states, clusters them correctly; produces Campaign objects. Commit.
 
 ## Phase 5 — Judgment corpus (the durable asset)
-- [ ] Persist every classification + score + memo as a labeled record, versioned by ontology/prompt version.
-- [ ] Support human **override** (correction) that is retained and supersedes the model label without deleting history.
-- [ ] Exportable (JSONL).
+- [x] Persist every classification + score + memo as a labeled record, versioned by ontology/prompt version.
+- [x] Support human **override** (correction) that is retained and supersedes the model label without deleting history.
+- [x] Exportable (JSONL).
 **Acceptance:** records persist; an override updates the active label and keeps the prior; `npm run export:corpus` writes JSONL. Commit.
 
 ## Phase 6 — Memo generation

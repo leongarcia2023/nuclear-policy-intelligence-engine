@@ -92,6 +92,7 @@ export function migrate(db: DB): void {
       bill_id          TEXT NOT NULL,
       ontology_version TEXT NOT NULL,
       prompt_version   TEXT NOT NULL,
+      provider         TEXT NOT NULL DEFAULT 'deterministic',
       model_label      TEXT NOT NULL,          -- JSON of the model's classification label
       active_label     TEXT NOT NULL,          -- JSON; equals model_label until overridden
       override_label   TEXT,                   -- JSON; set when a human corrects
@@ -109,4 +110,22 @@ export function migrate(db: DB): void {
       value TEXT NOT NULL
     );
   `);
+
+  // Additive column migrations (CREATE IF NOT EXISTS can't add columns to an
+  // existing table). Each is idempotent: only added when absent.
+  addColumnIfMissing(db, "corpus", "provider", "TEXT NOT NULL DEFAULT 'deterministic'");
+}
+
+function addColumnIfMissing(
+  db: DB,
+  table: string,
+  column: string,
+  decl: string,
+): void {
+  const cols = db.prepare(`PRAGMA table_info(${table})`).all() as {
+    name: string;
+  }[];
+  if (!cols.some((c) => c.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${decl}`);
+  }
 }

@@ -17,6 +17,9 @@
 *.db-wal
 *.db-shm
 
+# generated exports
+/corpus.export.jsonl
+
 # build / cache
 /coverage
 *.tsbuildinfo

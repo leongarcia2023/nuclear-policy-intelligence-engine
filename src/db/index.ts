@@ -105,6 +105,13 @@ export function migrate(db: DB): void {
       updated_at       TEXT NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS memos (
+      bill_id    TEXT PRIMARY KEY,
+      payload    TEXT NOT NULL,           -- JSON (Memo schema)
+      cache_key  TEXT NOT NULL,           -- sha(text)+ontology+prompt+generator
+      created_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS meta (
       key   TEXT PRIMARY KEY,
       value TEXT NOT NULL

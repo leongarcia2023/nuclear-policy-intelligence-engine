@@ -3,7 +3,7 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 6 — Memo generation (starting)
+- **Active phase:** Phase 7 — Eval harness (starting)
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
@@ -14,7 +14,7 @@ _Living status log. Updated after every phase._
 - [x] Phase 3 — Materiality scoring; 4 relevant gold bills → high, 2 negatives → none; reproducible; weights in one config (seed defaults)
 - [x] Phase 4 — Campaign detection (TF-IDF cosine + MinHash, deterministic/free); clusters a 3-state near-dup fixture, excludes distractor, feeds breadth
 - [x] Phase 5 — Judgment corpus; versioned records, overrides retained in history & preserved across re-runs, `npm run export:corpus` → JSONL
-- [ ] Phase 6 — Memo generation (templated, pluggable)
+- [x] Phase 6 — Memo generation (templated, deterministic, cached); position+why+citations; weekly digest; stable output; Ribbit Power Letter voice
 - [ ] Phase 7 — Eval harness (correctness; recall-on-indirect gate)
 - [ ] Phase 8 — UI ("Signal Desk")
 - [ ] Phase 9 — Docs & handoff

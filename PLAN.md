@@ -55,9 +55,9 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** records persist; an override updates the active label and keeps the prior; `npm run export:corpus` writes JSONL. Commit.
 
 ## Phase 6 — Memo generation
-- [ ] For a scored bill, generate a position-ready memo: headline, what it does, why it matters (board-readable, 1–2 sentences), suggested position (support/oppose/amend/monitor), recommended action. Cite bill sections.
-- [ ] Voice: terse, financially literate, slightly contrarian — "Ribbit Power Letter" register. Low temperature; cache.
-- [ ] Weekly digest: top-N bills by materiality across the store.
+- [x] For a scored bill, generate a position-ready memo: headline, what it does, why it matters (board-readable, 1–2 sentences), suggested position (support/oppose/amend/monitor), recommended action. Cite bill sections.
+- [x] Voice: terse, financially literate, slightly contrarian — "Ribbit Power Letter" register. Low temperature; cache.
+- [x] Weekly digest: top-N bills by materiality across the store.
 **Acceptance:** memo generated for top-N; each includes position + why-it-matters + citations; output stable given fixed classification. Commit.
 
 ## Phase 7 — Eval harness (CORRECTNESS, not formatting)

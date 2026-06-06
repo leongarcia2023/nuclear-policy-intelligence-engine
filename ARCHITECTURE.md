@@ -48,11 +48,12 @@ LegiScan (or gold_seed fixtures)
 ```
 
 ## Storage
-`better-sqlite3`, single local file `data/nuclear.db` (gitignored). Tables:
+`better-sqlite3`, single local file `data/nuclear.db` (gitignored). Migrations are idempotent (`CREATE IF NOT EXISTS` + guarded `ALTER`), so a fresh checkout boots a complete store. Tables:
 - `bills` — id, state, number, title, sponsors, committee, stage, last_action, history, full_text, change_hash, fetched_at
 - `classifications` — bill_id, provider, ontology_version, prompt_version, json payload, text_sha, created_at
 - `scores` — bill_id, component scores + rationales + aggregate + weights_version
 - `campaigns` / `campaign_members` — detected model-bill clusters
+- `memos` — cached memo per bill, keyed by (text sha, ontology, prompt, generator)
 - `corpus` — versioned judgment records with override lineage
 
 ## Determinism & testing
@@ -72,4 +73,9 @@ Everything that can be deterministic is real code with Vitest unit tests. The cl
 | `src/memo` | Templated memo generation |
 | `src/eval` | Gold-set runner, metrics, regression gate |
 | `src/db` | SQLite connection + migrations |
+| `src/pipeline` | end-to-end runner (`npm run pipeline`) |
+| `src/ui` | server-side data layer + override Server Action |
 | `app/` | Next.js Signal Desk UI |
+
+## Status
+All nine phases complete. `npm test` (46 tests) and `npm run eval` are green on the `deterministic` provider with no API key; `next build` is clean. CLIs: `ingest`, `classify`, `campaign`, `score`, `memo`, `pipeline`, `eval`, `export:corpus`.

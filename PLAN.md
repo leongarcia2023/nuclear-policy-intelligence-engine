@@ -75,8 +75,8 @@ Next.js + TypeScript + Tailwind. Local SQLite for the store. Vitest for tests. Z
 **Acceptance:** `npm run dev` renders the queue from SQLite; clicking a bill shows memo, per-component scores, and a working override. Commit.
 
 ## Phase 9 — Docs & handoff
-- [ ] `README.md`: setup, env vars, how to run ingest → classify → score → eval → UI.
-- [ ] Finalize `ARCHITECTURE.md` and `STATUS.md` (with the Assumptions log).
+- [x] `README.md`: setup, env vars, how to run ingest → classify → score → eval → UI.
+- [x] Finalize `ARCHITECTURE.md` and `STATUS.md` (with the Assumptions log).
 **Acceptance:** a new developer can run the whole pipeline from the README alone. Commit.
 
 ## If you finish early

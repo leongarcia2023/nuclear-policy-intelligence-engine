@@ -3,7 +3,7 @@
 _Living status log. Updated after every phase._
 
 ## Current state
-- **Active phase:** Phase 9 — Docs & handoff (starting)
+- **Status:** ALL NINE PHASES COMPLETE. `npm test` (46) + `npm run eval` green on `deterministic` with no API key; `next build` clean; cold-start pipeline verified.
 - **Provider:** `deterministic` (DEFAULT, zero paid APIs). `anthropic` adapter present but inert.
 - **LegiScan key present:** No → pipeline runs on `gold_seed.jsonl` fixtures.
 
@@ -17,7 +17,7 @@ _Living status log. Updated after every phase._
 - [x] Phase 6 — Memo generation (templated, deterministic, cached); position+why+citations; weekly digest; stable output; Ribbit Power Letter voice
 - [x] Phase 7 — Eval harness; 16 gold cases (6 anchors + 10 hand-authored), recall-on-indirect 100% (floor 0.80), FP 0%, vector/band/direction 100%; regression gate vs committed baseline
 - [x] Phase 8 — Signal Desk UI; queue sorted by materiality w/ INDIRECT flag, bill detail (memo + per-component score reasoning + working override→corpus), campaign view; `next build` clean
-- [ ] Phase 9 — Docs & handoff
+- [x] Phase 9 — Docs & handoff; README (setup → pipeline → eval → UI), ARCHITECTURE + STATUS finalized; cold-start verified end to end
 
 ## Assumptions (decisions made without asking, per autonomy rule)
 1. **Zero paid APIs (CLAUDE.md is authoritative over PLAN.md).** The default classification/memo provider is `deterministic`, a rules engine built from `ontology.seed.md`. The `anthropic` adapter exists behind the same interface but is inert unless `LLM_PROVIDER=anthropic` and a key are set. Nothing blocks on a key.

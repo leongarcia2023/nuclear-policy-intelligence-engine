@@ -56,10 +56,27 @@ Quality gates:
 
 ```bash
 npm test                  # full Vitest suite (deterministic, offline)
-npm run eval              # correctness eval; fails on regression / indirect-recall floor
+npm run eval              # reports tuning / held-out / combined; gates on held-out only
+npm run label             # hand-label a real bill into the SACRED held-out set
 ```
 
-`npm run eval` prints a metric table and **exits nonzero** if recall-on-indirect drops below 0.80 (absolute floor) or regresses against the committed baseline (`src/eval/baseline.json`). It tests correctness — catching indirect bills, rejecting false friends — never output shape. To intentionally rebaseline after an improvement: `EVAL_UPDATE_BASELINE=1 npm run eval`.
+### Evaluation: tuning is not recall
+
+There are **two** gold sets, with very different meaning. Conflating them is the trap this design avoids.
+
+- **Tuning set** (`gold_seed.jsonl` + `src/eval/gold.extra.jsonl`, 16 cases): these were **hand-authored to exercise the ontology regexes**. A high score here is **internal consistency, not recall** — it only confirms the rules do what we wrote them to do. The tuning set is a **smoke check and never gates the build.** Reading its 100% as "accuracy" is circular.
+- **Held-out set** (`src/eval/gold.heldout.jsonl`): **real LegiScan bills, hand-labeled blind** via `npm run label` (the labeler never shows the prediction, so there's no anchoring). **This is the only recall number that means anything.** The file is **sacred**: `src/classify/**` (especially `ontology.ts`) must **never** be edited to make a held-out case pass — a held-out miss is a real finding to record, not a regex to tune.
+
+`npm run eval` prints all three buckets **separately** (tuning, held-out, combined). The 0.80 indirect-recall floor and the regression baseline (`src/eval/baseline.json`, scope `held-out`) key off **held-out only**.
+
+**The held-out set is currently empty, so real recall is UNMEASURED** — the eval prints `HELD-OUT RECALL: UNMEASURED` in bold and exits 0 without claiming any recall number. To start measuring real-world recall:
+
+```bash
+npm run label    # paste a bill (or pull via LegiScan with a key), label it blind
+npm run eval     # held-out metrics now appear; first run records the baseline
+```
+
+After a genuine classifier improvement, refresh the held-out baseline intentionally with `EVAL_UPDATE_BASELINE=1 npm run eval`.
 
 ## Using the Signal Desk
 
@@ -77,7 +94,7 @@ LegiScan (or gold_seed fixtures)
   → score       passage/magnitude/breadth/urgency, weighted, each w/ why   → SQLite(scores)
   → memo        templated, position-ready, cited, stable                   → SQLite(memos)
   → corpus      versioned judgment records + human overrides (history)     → SQLite(corpus)
-  → eval        correctness metrics; recall-on-indirect regression gate
+  → eval        held-out recall gate (tuning set is a smoke check, never gates)
   → UI          Signal Desk (queue, bill detail, campaigns)
 ```
 

@@ -18,6 +18,7 @@
     "memo": "tsx src/memo/run.ts",
     "pipeline": "tsx src/pipeline/run.ts",
     "eval": "tsx src/eval/run.ts",
+    "label": "tsx src/eval/label.ts",
     "export:corpus": "tsx src/corpus/export.ts"
   },
   "dependencies": {

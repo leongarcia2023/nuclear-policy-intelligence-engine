@@ -1,10 +1,17 @@
 import { describe, it, expect } from "vitest";
-import { loadEvalGold } from "./gold";
+import { loadTuningGold, loadHeldoutGold } from "./gold";
 import { evaluate } from "./metrics";
 
-describe("eval harness — correctness (not formatting)", () => {
-  it("loads the gold set (anchors + hand-authored extras) with indirect & negative samples", () => {
-    const cases = loadEvalGold();
+/**
+ * NOTE ON WHAT THESE TESTS DO AND DON'T PROVE.
+ * The tuning cases were authored to exercise the ontology regexes, so strong
+ * tuning metrics are an INTERNAL-CONSISTENCY check — they confirm the rules
+ * behave as written. They are NOT evidence of real-world recall. Real recall
+ * lives in the held-out set and is currently UNMEASURED.
+ */
+describe("eval harness — tuning set (internal consistency only)", () => {
+  it("loads the tuning set (anchors + hand-authored extras)", () => {
+    const cases = loadTuningGold();
     expect(cases.length).toBeGreaterThanOrEqual(12);
     const indirect = cases.filter((c) => c.labels.relevant && c.labels.is_indirect);
     const negatives = cases.filter((c) => !c.labels.relevant);
@@ -12,28 +19,25 @@ describe("eval harness — correctness (not formatting)", () => {
     expect(negatives.length).toBeGreaterThanOrEqual(4);
   });
 
-  it("clears the recall-on-indirect floor (>= 0.80) — the product's reason to exist", async () => {
-    const m = await evaluate(loadEvalGold());
+  it("is internally consistent: the rules classify the cases they were written for", async () => {
+    const m = await evaluate(loadTuningGold());
+    // This is self-consistency, NOT recall. It must hold or the rules drifted
+    // from the tuning examples — but it says nothing about real bills.
     expect(m.recall_on_indirect).toBeGreaterThanOrEqual(0.8);
-  });
-
-  it("keeps the false-positive rate on negative controls low", async () => {
-    const m = await evaluate(loadEvalGold());
     expect(m.false_positive_rate).toBeLessThanOrEqual(0.2);
   });
 
-  it("catches the two hardest anchors: OH indirect-include and NY nuclear-medicine reject", async () => {
-    const cases = loadEvalGold();
-    const m = await evaluate(cases);
-    // No indirect misses means OH HB 1180 was caught; no false positive means
-    // NY SB 88 (nuclear medicine) was rejected.
+  it("still handles the two hardest anchors (OH indirect-include, NY nuclear-medicine reject)", async () => {
+    const m = await evaluate(loadTuningGold());
     expect(m.misses.some((x) => x.includes("INDIRECT MISS"))).toBe(false);
     expect(m.misses.some((x) => x.includes("FALSE POSITIVE"))).toBe(false);
   });
+});
 
-  it("relevance precision/recall are strong on the gold set", async () => {
-    const m = await evaluate(loadEvalGold());
-    expect(m.relevance.recall).toBeGreaterThanOrEqual(0.8);
-    expect(m.relevance.precision).toBeGreaterThanOrEqual(0.8);
+describe("eval harness — held-out set (the only recall that counts)", () => {
+  it("is currently EMPTY → real recall is unmeasured (no number is claimed)", () => {
+    // When this becomes non-empty (via `npm run label`), the gate + baseline
+    // activate on it. Until then the harness must claim no recall number.
+    expect(loadHeldoutGold().length).toBe(0);
   });
 });

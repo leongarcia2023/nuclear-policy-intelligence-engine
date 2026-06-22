@@ -104,6 +104,44 @@ export class LegiScanClient {
     return out;
   }
 
+  /**
+   * getSearchRaw — full-text search within a state for a query string.
+   * Used by the held-out labeler (`npm run label`) to surface real bills to
+   * hand-label. Returns bill_id + number + title so the operator can pick.
+   */
+  async getSearchRaw(
+    state: string,
+    query: string,
+    page = 1,
+  ): Promise<
+    { bill_id: number; bill_number: string; title: string; state: string; relevance: number }[]
+  > {
+    const json = await this.call<{ searchresult: Record<string, any> }>(
+      "getSearchRaw",
+      { state, query, page: String(page) },
+    );
+    const out: {
+      bill_id: number;
+      bill_number: string;
+      title: string;
+      state: string;
+      relevance: number;
+    }[] = [];
+    for (const [key, v] of Object.entries(json.searchresult ?? {})) {
+      if (key === "summary") continue; // pagination metadata
+      if (v && typeof v === "object" && "bill_id" in v) {
+        out.push({
+          bill_id: (v as any).bill_id,
+          bill_number: (v as any).bill_number ?? "",
+          title: (v as any).title ?? "",
+          state: (v as any).state ?? state,
+          relevance: (v as any).relevance ?? 0,
+        });
+      }
+    }
+    return out;
+  }
+
   async getBill(legiscanId: number): Promise<BillMeta> {
     const json = await this.call<{ bill: any }>("getBill", {
       id: String(legiscanId),

@@ -1,0 +1,14 @@
+# SACRED HELD-OUT SET — real LegiScan bills, hand-labeled via `npm run label`.
+# This is the ONLY eval set whose recall means anything. The 0.80 indirect floor
+# and the regression baseline key off THIS FILE ONLY.
+#
+# RULE: src/classify/** (especially ontology.ts) must NEVER be edited to make a
+# case in this file pass. If a held-out bill is misclassified, that is a REAL
+# finding about the classifier — record it, do not tune the regexes to it.
+# Label without looking at the prediction (npm run label does not show it).
+#
+# One JSON object per line, matching the GoldCase schema:
+#   {"id","state","bill_number","title","text","labels":{relevant,is_indirect,
+#    model_bill_risk,primary_vectors[],direction,expected_position,materiality_band},"note"}
+#
+# Currently EMPTY → real recall is UNMEASURED.

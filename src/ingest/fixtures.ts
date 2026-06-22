@@ -44,7 +44,10 @@ const DEFAULT_PATH = resolve(process.cwd(), "gold_seed.jsonl");
 /** Parse gold_seed.jsonl into typed cases (bill + held-out labels). */
 export function loadGoldSeed(path: string = DEFAULT_PATH): GoldCase[] {
   const raw = readFileSync(path, "utf8");
-  const lines = raw.split("\n").filter((l) => l.trim().length > 0);
+  // Skip blank lines and `#` comment lines (the held-out file carries a header).
+  const lines = raw
+    .split("\n")
+    .filter((l) => l.trim().length > 0 && !l.trimStart().startsWith("#"));
   // Deterministic, fixed timestamp so fixture ingestion is reproducible.
   const fetchedAt = "2026-01-01T00:00:00.000Z";
   return lines.map((line) => {

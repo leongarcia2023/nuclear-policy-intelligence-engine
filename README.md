@@ -78,6 +78,19 @@ npm run eval     # held-out metrics now appear; first run records the baseline
 
 After a genuine classifier improvement, refresh the held-out baseline intentionally with `EVAL_UPDATE_BASELINE=1 npm run eval`.
 
+### The adversarial set: regex recall is not real recall
+
+`src/eval/gold.adversarial.jsonl` (19 cases) expresses the **same indirect concepts** the product headlines — silent inclusion, silent exclusion, co-location, cost-recovery bars — but phrased the way a real drafter plausibly would, **deliberately dodging the current regex tells** (e.g. "emits no greenhouse gases / around-the-clock" instead of "zero-carbon / firm dispatchable"; a defined term ending in "facility"/"technology" so the `… means` capture misses; "may not authorize recovery" instead of "shall not approve"; ELCC capacity accreditation with no definitions clause). The labels are true analyst judgments.
+
+This bucket is **non-gating** and **expected to score low**. On the deterministic provider it lands around:
+
+```
+recall-on-indirect   tuning(self-authored) 100.0%   vs   adversarial(real phrasing) 11.1%   (−88.9%)
+direction-agreement  tuning 100.0%   vs   adversarial   0.0%   (−100.0%)
+```
+
+That ~89-point gap is the headline finding: **the tuning set's 100% measures the regexes against bills written to match them; the adversarial set measures what real phrasing does to them.** Do **not** widen `src/classify/ontology.ts` to close this gap — that overfits the instrument (the exact failure mode the held-out discipline exists to prevent). The gap is the argument for the LLM provider, not for more regexes. The notably negative confidence calibration here (the classifier is *more* confident on the bills it gets wrong) is part of the same finding.
+
 ## Using the Signal Desk
 
 - **/desk** — operator queue, sorted by materiality, with an unmistakable `INDIRECT — keyword search would miss this` flag.

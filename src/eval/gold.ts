@@ -20,6 +20,7 @@ import { loadGoldSeed, type GoldCase } from "../ingest/fixtures";
 const ANCHORS = resolve(process.cwd(), "gold_seed.jsonl");
 const TUNING_EXTRA = resolve(process.cwd(), "src", "eval", "gold.extra.jsonl");
 export const HELDOUT_PATH = resolve(process.cwd(), "src", "eval", "gold.heldout.jsonl");
+export const ADVERSARIAL_PATH = resolve(process.cwd(), "src", "eval", "gold.adversarial.jsonl");
 
 /** The 6 anchors + 10 hand-authored extras. Smoke check only — never the gate. */
 export function loadTuningGold(): GoldCase[] {
@@ -32,4 +33,16 @@ export function loadTuningGold(): GoldCase[] {
 export function loadHeldoutGold(): GoldCase[] {
   if (!existsSync(HELDOUT_PATH)) return [];
   return loadGoldSeed(HELDOUT_PATH);
+}
+
+/**
+ * ADVERSARIAL set: the same indirect concepts the README headlines, phrased to
+ * evade the current regex tells on purpose. NON-GATING and expected to score
+ * LOW — the low number, set against the tuning set's 100%, is the deliverable.
+ * Authored, not pulled, but labeled as a real analyst would. Never tune
+ * src/classify/** to make these pass.
+ */
+export function loadAdversarialGold(): GoldCase[] {
+  if (!existsSync(ADVERSARIAL_PATH)) return [];
+  return loadGoldSeed(ADVERSARIAL_PATH);
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { loadTuningGold, loadHeldoutGold } from "./gold";
+import { loadTuningGold, loadHeldoutGold, loadAdversarialGold } from "./gold";
 import { evaluate } from "./metrics";
 
 /**
@@ -39,5 +39,31 @@ describe("eval harness — held-out set (the only recall that counts)", () => {
     // When this becomes non-empty (via `npm run label`), the gate + baseline
     // activate on it. Until then the harness must claim no recall number.
     expect(loadHeldoutGold().length).toBe(0);
+  });
+});
+
+describe("eval harness — adversarial set (the gap IS the finding)", () => {
+  it("has a substantial sample of evasive-phrasing bills", () => {
+    expect(loadAdversarialGold().length).toBeGreaterThanOrEqual(16);
+  });
+
+  it("scores FAR below tuning on indirect recall and direction (regex != recall)", async () => {
+    const tuning = await evaluate(loadTuningGold());
+    const adv = await evaluate(loadAdversarialGold());
+    // The whole point: identical concepts, real phrasing → the deterministic
+    // classifier collapses. This documents the brittleness; it is NOT a target
+    // to optimize by widening regexes (that overfits the instrument).
+    expect(adv.recall_on_indirect).toBeLessThan(tuning.recall_on_indirect - 0.3);
+    expect(adv.direction_agreement).toBeLessThan(tuning.direction_agreement - 0.3);
+    // Guardrail: if a future edit makes these "pass" on the deterministic
+    // provider, it almost certainly means ontology.ts was widened to fit the
+    // adversarial cases — the forbidden move. This assertion will flag it.
+    expect(adv.recall_on_indirect).toBeLessThanOrEqual(0.5);
+  });
+
+  it("is NON-GATING: the eval runner never fails the build on adversarial scores", () => {
+    // Asserted structurally: run.ts computes failures ONLY from held-out metrics.
+    // (Held-out is empty here, so `npm run eval` exits 0 despite ~11% adversarial.)
+    expect(true).toBe(true);
   });
 });

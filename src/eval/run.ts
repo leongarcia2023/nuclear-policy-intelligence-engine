@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
-import { loadTuningGold, loadHeldoutGold } from "./gold";
+import { loadTuningGold, loadHeldoutGold, loadAdversarialGold } from "./gold";
 import { evaluate, type Metrics } from "./metrics";
 
 const BASELINE_PATH = resolve(process.cwd(), "src", "eval", "baseline.json");
@@ -62,6 +62,7 @@ function toBaseline(m: Metrics, provider: string): Baseline {
 async function main() {
   const provider = process.env.LLM_PROVIDER || "deterministic";
   const tuning = loadTuningGold();
+  const adversarial = loadAdversarialGold();
   const heldout = loadHeldoutGold();
 
   console.log(`\n${BOLD}Nuclear Policy Intel — Eval${RESET}  (provider=${provider})`);
@@ -73,6 +74,32 @@ async function main() {
     "Cases written to exercise the ontology regexes. NOT a measure of real recall. Never gates the build.",
     tuningMetrics,
   );
+
+  // 1b) ADVERSARIAL — same concepts, evasive phrasing. NON-GATING; expected LOW.
+  if (adversarial.length > 0) {
+    const advMetrics = await evaluate(adversarial);
+    printTable(
+      "ADVERSARIAL SET — evasive phrasing (NON-GATING; expected LOW)",
+      "Same indirect concepts the README headlines, worded to dodge the regex tells. The low number IS the finding.",
+      advMetrics,
+    );
+    const dInd = tuningMetrics.recall_on_indirect - advMetrics.recall_on_indirect;
+    const dDir = tuningMetrics.direction_agreement - advMetrics.direction_agreement;
+    console.log(`\n  ${BOLD}THE GAP (why regex recall is not real recall):${RESET}`);
+    console.log(
+      `  recall-on-indirect   tuning(self-authored) ${pct(tuningMetrics.recall_on_indirect)}` +
+        `   vs   adversarial(real phrasing) ${BOLD}${pct(advMetrics.recall_on_indirect)}${RESET}` +
+        `   ${DIM}(−${pct(dInd)})${RESET}`,
+    );
+    console.log(
+      `  direction-agreement  tuning ${pct(tuningMetrics.direction_agreement)}` +
+        `   vs   adversarial ${BOLD}${pct(advMetrics.direction_agreement)}${RESET}` +
+        `   ${DIM}(−${pct(dDir)})${RESET}`,
+    );
+    console.log(
+      `  ${DIM}Non-gating by design. Do NOT widen ontology.ts to close this — that overfits the instrument.${RESET}`,
+    );
+  }
 
   // 2) HELD-OUT — the only recall that counts.
   if (heldout.length === 0) {

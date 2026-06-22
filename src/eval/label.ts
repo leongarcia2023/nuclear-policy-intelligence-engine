@@ -103,7 +103,7 @@ async function main() {
   if (source === "legiscan") {
     if (!key) {
       stdout.write("No LEGISCAN_API_KEY set — cannot pull from LegiScan. Re-run and choose paste.\n");
-      rl.close();
+      rl?.close();
       process.exit(1);
     }
     const client = new LegiScanClient(key);
@@ -112,7 +112,7 @@ async function main() {
     const results = (await client.getSearchRaw(state, query)).slice(0, 15);
     if (results.length === 0) {
       stdout.write("No results.\n");
-      rl.close();
+      rl?.close();
       process.exit(1);
     }
     results.forEach((r, i) =>

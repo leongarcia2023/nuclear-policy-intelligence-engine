@@ -18,6 +18,7 @@
     "memo": "tsx src/memo/run.ts",
     "pipeline": "tsx src/pipeline/run.ts",
     "eval": "tsx src/eval/run.ts",
+    "eval:compare": "tsx src/eval/compare.ts",
     "label": "tsx src/eval/label.ts",
     "export:corpus": "tsx src/corpus/export.ts"
   },
@@ -27,6 +28,9 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^3.24.1"
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.69.0"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",

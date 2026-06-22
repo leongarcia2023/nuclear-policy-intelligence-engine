@@ -1,7 +1,13 @@
 import type { Bill } from "../../ingest/schema";
+import { billId } from "../../ingest/schema";
 import type { ClassifierProvider } from "../provider";
 import { Classification, parseClassification } from "../schema";
 import { ONTOLOGY_VERSION, ALL_VECTORS } from "../ontology";
+import { getDb } from "../../db";
+import { readCache, writeCache, textSha } from "../cache";
+
+/** Model used for the LLM backend. Opus 4.8 is the most capable default. */
+export const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-opus-4-8";
 
 /**
  * Anthropic adapter — IMPLEMENTED BUT INERT.
@@ -44,6 +50,32 @@ export function buildPrompt(
   return { system, user };
 }
 
+/**
+ * Parse a model's text response into a validated Classification. Strips code
+ * fences, extracts the JSON object, stamps authoritative provenance, and runs
+ * it through the SAME parseClassification() contract as every other provider.
+ * Exported so it can be unit-tested without an API call.
+ */
+export function parseAnthropicResponse(text: string): Classification {
+  const stripped = text
+    .replace(/^```(?:json)?/i, "")
+    .replace(/```$/i, "")
+    .trim();
+  const start = stripped.indexOf("{");
+  const end = stripped.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(`AnthropicProvider: no JSON object in response: ${text.slice(0, 160)}`);
+  }
+  const parsed = JSON.parse(stripped.slice(start, end + 1)) as Record<string, unknown>;
+  return parseClassification({
+    ...parsed,
+    // Provenance is ours to set, not the model's.
+    provider: "anthropic",
+    ontology_version: ONTOLOGY_VERSION,
+    prompt_version: PROMPT_VERSION,
+  });
+}
+
 export class AnthropicProvider implements ClassifierProvider {
   readonly name = "anthropic";
   readonly promptVersion = PROMPT_VERSION;
@@ -58,23 +90,63 @@ export class AnthropicProvider implements ClassifierProvider {
     }
   }
 
+  /**
+   * Live classification via the Anthropic SDK. Output is parsed through the
+   * SAME parseClassification() Zod contract as every other provider — no
+   * special-casing. Provenance fields (provider / ontology / prompt version)
+   * are injected server-side so they're authoritative regardless of the model.
+   *
+   * Cached by (sha256(text), provider, ONTOLOGY_VERSION, PROMPT_VERSION) using
+   * the shared cache.ts helpers, so re-runs cost nothing.
+   */
   async classify(
     bill: Pick<Bill, "title" | "full_text" | "state" | "bill_number">,
   ): Promise<Classification> {
-    // Seam only. Wiring the live call (Anthropic SDK + prompt caching) is a
-    // localized change; the prompt and parser below are ready.
+    const db = getDb();
+    const sha = textSha(`${bill.title}\n${bill.full_text}`);
+    const key = {
+      billId: billId(bill.state, bill.bill_number),
+      provider: this.name,
+      ontologyVersion: ONTOLOGY_VERSION,
+      promptVersion: this.promptVersion,
+      textSha: sha,
+    };
+    const cached = readCache(db, key);
+    if (cached) return cached;
+
     const { system, user } = buildPrompt(bill);
-    void system;
-    void user;
-    throw new Error(
-      "AnthropicProvider.classify is an inert seam in the zero-API build. " +
-        "Implement the SDK call here to enable the LLM backend; output must pass " +
-        "parseClassification().",
-    );
+    const text = await this.callModel(system, user);
+    const result = parseAnthropicResponse(text);
+
+    writeCache(db, { ...key, payload: result });
+    return result;
   }
 
-  /** Exposed so a future implementation validates exactly like the others. */
-  protected parse(raw: unknown): Classification {
-    return parseClassification(raw);
+  /** One Messages API call with prompt caching on the (frozen) system prompt. */
+  private async callModel(system: string, user: string): Promise<string> {
+    // Lazy import keeps the SDK an OPTIONAL dependency — the deterministic
+    // build never loads it.
+    let Anthropic: typeof import("@anthropic-ai/sdk").default;
+    try {
+      Anthropic = (await import("@anthropic-ai/sdk")).default;
+    } catch {
+      throw new Error(
+        "@anthropic-ai/sdk is not installed. `npm install @anthropic-ai/sdk` to use LLM_PROVIDER=anthropic.",
+      );
+    }
+    const client = new Anthropic(); // reads ANTHROPIC_API_KEY from env
+
+    const msg = await client.messages.create({
+      model: ANTHROPIC_MODEL,
+      max_tokens: 1024,
+      // The ontology system prompt is identical across every bill → cache it.
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: user }],
+    });
+    const block = msg.content.find((b) => b.type === "text");
+    if (!block || block.type !== "text") {
+      throw new Error("AnthropicProvider: no text block in response");
+    }
+    return block.text;
   }
 }

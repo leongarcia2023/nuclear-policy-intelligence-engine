@@ -1,8 +1,11 @@
 import type { GoldCase } from "../ingest/fixtures";
 import { DeterministicProvider } from "../classify/providers/deterministic";
-import { getProvider } from "../classify/provider";
+import { getProvider, type ClassifierProvider } from "../classify/provider";
 import { scoreBill } from "../score/score";
 import { matchCountsByBill } from "../campaign/campaign";
+
+/** A wrong directional call made with high stated confidence — the worst kind. */
+const CONFIDENT_THRESHOLD = 0.7;
 
 export type Metrics = {
   n: number;
@@ -22,6 +25,8 @@ export type Metrics = {
   direction_agreement: number;
   /** Confidence calibration: mean confidence when the relevance call is right vs wrong. */
   calibration: { mean_conf_correct: number; mean_conf_wrong: number; gap: number };
+  /** Count of cases predicted with a WRONG direction at high confidence (≥0.7). */
+  confident_wrong_direction: number;
   misses: string[]; // human-readable list of disagreements
 };
 
@@ -32,12 +37,17 @@ const round = (n: number, d = 3) => Number(n.toFixed(d));
  * This tests correctness (catching indirect bills, rejecting false friends),
  * never output shape.
  */
-export async function evaluate(cases: GoldCase[]): Promise<Metrics> {
-  // Default provider is deterministic; honor an override via env if set.
+export async function evaluate(
+  cases: GoldCase[],
+  providerOverride?: ClassifierProvider,
+): Promise<Metrics> {
+  // Explicit override wins (used by eval:compare). Otherwise default to
+  // deterministic, honoring LLM_PROVIDER only when it's set to a non-default.
   const provider =
-    process.env.LLM_PROVIDER && process.env.LLM_PROVIDER !== "deterministic"
+    providerOverride ??
+    (process.env.LLM_PROVIDER && process.env.LLM_PROVIDER !== "deterministic"
       ? await getProvider()
-      : new DeterministicProvider();
+      : new DeterministicProvider());
 
   const bills = cases.map((c) => c.bill);
   const matchCounts = matchCountsByBill(bills);
@@ -53,7 +63,8 @@ export async function evaluate(cases: GoldCase[]): Promise<Metrics> {
   let vectorRecallSum = 0,
     relevantCount = 0;
   let bandAgree = 0,
-    dirAgree = 0;
+    dirAgree = 0,
+    confidentWrongDir = 0;
   const confCorrect: number[] = [];
   const confWrong: number[] = [];
   const misses: string[] = [];
@@ -117,7 +128,10 @@ export async function evaluate(cases: GoldCase[]): Promise<Metrics> {
     if (score.band === g.materiality_band) bandAgree++;
     else misses.push(`${c.gold_id} band: pred ${score.band} vs gold ${g.materiality_band}`);
     if (pred.direction === g.direction) dirAgree++;
-    else misses.push(`${c.gold_id} direction: pred ${pred.direction} vs gold ${g.direction}`);
+    else {
+      misses.push(`${c.gold_id} direction: pred ${pred.direction} vs gold ${g.direction}`);
+      if (pred.confidence >= CONFIDENT_THRESHOLD) confidentWrongDir++;
+    }
   }
 
   const precision = tp + fp ? tp / (tp + fp) : 1;
@@ -146,6 +160,7 @@ export async function evaluate(cases: GoldCase[]): Promise<Metrics> {
       mean_conf_wrong: round(mean(confWrong)),
       gap: round(mean(confCorrect) - mean(confWrong)),
     },
+    confident_wrong_direction: confidentWrongDir,
     misses,
   };
 }

@@ -28,7 +28,8 @@ cp .env.example .env      # all keys may stay blank — the default build needs 
 | Var | Default | Effect |
 |-----|---------|--------|
 | `LLM_PROVIDER` | `deterministic` | `deterministic` \| `anthropic` \| `local`. Only `deterministic` runs with no key. |
-| `ANTHROPIC_API_KEY` | — | Read only when `LLM_PROVIDER=anthropic`. The adapter throws if selected without it. |
+| `ANTHROPIC_API_KEY` | — | Read only when `LLM_PROVIDER=anthropic` (or by `eval:compare`). The provider throws if selected without it. |
+| `ANTHROPIC_MODEL` | `claude-opus-4-8` | Overrides the model used by the Anthropic backend. |
 | `LEGISCAN_API_KEY` | — | Free key. If absent, the pipeline uses `gold_seed.jsonl` fixtures. |
 | `INGEST_STATES` | `TX,OH,PA,CA,IL` | Comma-separated pilot states for `npm run ingest`. |
 
@@ -57,6 +58,7 @@ Quality gates:
 ```bash
 npm test                  # full Vitest suite (deterministic, offline)
 npm run eval              # reports tuning / held-out / combined; gates on held-out only
+npm run eval:compare      # deterministic vs anthropic LLM, side by side (needs a key for the LLM column)
 npm run label             # hand-label a real bill into the SACRED held-out set
 ```
 
@@ -113,9 +115,25 @@ LegiScan (or gold_seed fixtures)
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the module map and the zero-API provider seam, and [STATUS.md](STATUS.md) for phase status and the Assumptions log.
 
-## Adding the LLM backend later
+## The LLM backend (optional, off by default)
 
-The deterministic provider and the Anthropic adapter implement the same `ClassifierProvider` interface and emit the same Zod-validated `Classification`. To enable the LLM backend, implement the single `classify()` call in `src/classify/providers/anthropic.ts` (the prompt and parser are already defined), set `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`, and re-run. The eval's regression baseline makes the LLM's lift over the deterministic baseline directly measurable.
+The deterministic provider and the Anthropic provider implement the same `ClassifierProvider` interface and emit the same Zod-validated `Classification` — no special-casing. The Anthropic backend is **fully implemented** (`src/classify/providers/anthropic.ts`): a single Messages API call with **prompt caching** on the frozen ontology system prompt, parsed through the same `parseClassification()` contract, and **cached by `(sha256(text), provider, ontology, prompt)`** so re-runs cost nothing. `@anthropic-ai/sdk` is an **optional** dependency, lazy-imported — the deterministic build never loads it.
+
+It is **inert unless you opt in**. To enable:
+
+```bash
+npm install                       # @anthropic-ai/sdk is an optionalDependency
+export ANTHROPIC_API_KEY=sk-ant-...
+export LLM_PROVIDER=anthropic      # default model: claude-opus-4-8 (override with ANTHROPIC_MODEL)
+```
+
+Then measure the lift over the deterministic floor — both providers, on the bills that matter:
+
+```bash
+npm run eval:compare              # side-by-side: deterministic vs anthropic, held-out + adversarial
+```
+
+`eval:compare` prints recall-on-indirect, direction-agreement, false-positive rate, and a **confident-wrong-direction** count for each provider, with the lift as a single visible delta. **It spends real API budget on the first run** (cached after). Without `ANTHROPIC_API_KEY` it shows the deterministic column only and skips the Anthropic one. The selling story is exactly this: a **deterministic floor that costs $0**, plus a **measured LLM lift on real, hard bills** — the deterministic provider stays the default.
 
 ## Layout
 

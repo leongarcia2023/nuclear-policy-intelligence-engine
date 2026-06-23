@@ -3,6 +3,7 @@ import { DeterministicProvider } from "../classify/providers/deterministic";
 import { getProvider, type ClassifierProvider } from "../classify/provider";
 import { scoreBill } from "../score/score";
 import { matchCountsByBill } from "../campaign/campaign";
+import { NUCLEAR_KEYWORDS } from "../classify/ontology";
 
 /** A wrong directional call made with high stated confidence — the worst kind. */
 const CONFIDENT_THRESHOLD = 0.7;
@@ -49,6 +50,15 @@ export async function evaluate(
       ? await getProvider()
       : new DeterministicProvider());
 
+  // Apples-to-apples: in the comparison path (an explicit providerOverride),
+  // recompute is_indirect IDENTICALLY for every provider as
+  // `relevant && !NUCLEAR_KEYWORDS.test(text)`, ignoring whatever each provider
+  // self-reports. This stops an LLM from inflating recall-on-indirect by
+  // over-flagging a label it assigns itself — it only earns credit for indirect
+  // bills it correctly marked RELEVANT. (No-op for the deterministic provider,
+  // which already derives is_indirect this exact way.)
+  const normalizeIndirect = providerOverride !== undefined;
+
   const bills = cases.map((c) => c.bill);
   const matchCounts = matchCountsByBill(bills);
 
@@ -92,12 +102,18 @@ export async function evaluate(
       );
 
     // Recall on indirect (the catch that justifies the product).
+    // `predIndirect` is the provider's self-reported flag normally, but in the
+    // comparison path it is recomputed mechanically and identically for all
+    // providers — a function of (relevance call + text), not self-assessment.
+    const predIndirect = normalizeIndirect
+      ? pred.relevant && !NUCLEAR_KEYWORDS.test(`${c.bill.title}\n${c.bill.full_text}`)
+      : pred.is_indirect;
     if (g.relevant && g.is_indirect) {
       indirectTotal++;
-      if (pred.relevant && pred.is_indirect) indirectCaught++;
+      if (pred.relevant && predIndirect) indirectCaught++;
       else
         misses.push(
-          `${c.gold_id} INDIRECT MISS: relevant=${pred.relevant} is_indirect=${pred.is_indirect}`,
+          `${c.gold_id} INDIRECT MISS: relevant=${pred.relevant} is_indirect=${predIndirect}`,
         );
     }
 

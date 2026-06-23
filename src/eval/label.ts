@@ -5,6 +5,10 @@ import { LegiScanClient } from "../ingest/legiscan";
 import { GoldLabels } from "../ingest/fixtures";
 import { HELDOUT_PATH } from "./gold";
 
+// Output path. Defaults to the real held-out file; tests override via
+// LABEL_OUT_PATH so they never touch the committed (sacred) file.
+const OUT_PATH = process.env.LABEL_OUT_PATH || HELDOUT_PATH;
+
 /**
  * `npm run label` — interactive labeler for the SACRED held-out set.
  *
@@ -39,8 +43,8 @@ const VECTOR_IDS = [
 
 function nextHeldoutId(): string {
   let n = 0;
-  if (existsSync(HELDOUT_PATH)) {
-    const raw = readFileSync(HELDOUT_PATH, "utf8");
+  if (existsSync(OUT_PATH)) {
+    const raw = readFileSync(OUT_PATH, "utf8");
     for (const line of raw.split("\n")) {
       const t = line.trim();
       if (!t || t.startsWith("#")) continue;
@@ -84,6 +88,38 @@ async function main() {
   const askBool = async (q: string): Promise<boolean> => {
     const a = (await ask(`${q} [y/n]: `)).trim().toLowerCase();
     return a === "y" || a === "yes" || a === "true" || a === "t";
+  };
+
+  // Required-label helpers. A held-out set whose ONLY value is label quality must
+  // never record a skipped field as a silent default. Blank / EOF / ambiguous on
+  // a required field is a FATAL error — we abort and write nothing.
+  const abortBlank = (field: string): never => {
+    throw new Error(
+      `Required field '${field}' was left blank/EOF. Every required label ` +
+        `(relevant, is_indirect, direction, expected_position, materiality_band) ` +
+        `must be deliberately answered. Aborting — nothing written.`,
+    );
+  };
+  const askEnumRequired = async (
+    field: string,
+    q: string,
+    allowed: string[],
+  ): Promise<string> => {
+    for (;;) {
+      const a = (await ask(`${q} [${allowed.join("/")}]: `)).trim().toLowerCase();
+      if (a === "") abortBlank(field);
+      if (allowed.includes(a)) return a;
+      stdout.write(`  not one of ${allowed.join(", ")} — try again\n`);
+    }
+  };
+  const askBoolRequired = async (field: string, q: string): Promise<boolean> => {
+    const a = (await ask(`${q} [y/n]: `)).trim().toLowerCase();
+    if (a === "") abortBlank(field);
+    if (a === "y" || a === "yes" || a === "true" || a === "t") return true;
+    if (a === "n" || a === "no" || a === "false" || a === "f") return false;
+    throw new Error(
+      `Required field '${field}': expected y/n, got '${a}'. Aborting — nothing written.`,
+    );
   };
 
   stdout.write("\n=== Held-out labeler (no prediction shown — label the bill, not the model) ===\n\n");
@@ -147,24 +183,33 @@ async function main() {
   stdout.write(`Valid vector ids:\n  ${VECTOR_IDS.join(", ")}\n\n`);
 
   // Label from the bill alone — no prediction is ever shown.
-  const relevant = await askBool("relevant? (does it affect COMMERCIAL nuclear fission economics)");
-  const is_indirect = await askBool("is_indirect? (would a keyword search for 'nuclear' MISS this)");
+  // Required fields hard-fail on blank/EOF (askEnumRequired / askBoolRequired);
+  // model_bill_risk, primary_vectors, and note remain optional.
+  const relevant = await askBoolRequired(
+    "relevant",
+    "relevant? (does it affect COMMERCIAL nuclear fission economics)",
+  );
+  const is_indirect = await askBoolRequired(
+    "is_indirect",
+    "is_indirect? (would a keyword search for 'nuclear' MISS this)",
+  );
   const model_bill_risk = await askBool("model_bill_risk? (template likely to recur across states)");
-  const direction = (await askEnum("direction", ["helps", "hurts", "neutral"])) as
-    | "helps"
-    | "hurts"
-    | "neutral";
+  const direction = (await askEnumRequired("direction", "direction", [
+    "helps",
+    "hurts",
+    "neutral",
+  ])) as "helps" | "hurts" | "neutral";
   const vectorsRaw = (await ask("primary_vectors (comma-separated ids, blank if none): ")).trim();
   const primary_vectors = vectorsRaw
     ? vectorsRaw.split(",").map((v) => v.trim()).filter(Boolean)
     : [];
-  const expected_position = (await askEnum("expected_position", [
+  const expected_position = (await askEnumRequired("expected_position", "expected_position", [
     "support",
     "oppose",
     "amend",
     "monitor",
   ])) as "support" | "oppose" | "amend" | "monitor";
-  const materiality_band = (await askEnum("materiality_band", [
+  const materiality_band = (await askEnumRequired("materiality_band", "materiality_band", [
     "none",
     "low",
     "medium",
@@ -194,8 +239,8 @@ async function main() {
     ...(note ? { note } : {}),
   };
 
-  appendFileSync(HELDOUT_PATH, JSON.stringify(row) + "\n", "utf8");
-  stdout.write(`\n✓ Wrote ${row.id} to ${HELDOUT_PATH}\n`);
+  appendFileSync(OUT_PATH, JSON.stringify(row) + "\n", "utf8");
+  stdout.write(`\n✓ Wrote ${row.id} to ${OUT_PATH}\n`);
   stdout.write("Reminder: src/classify/** must NOT be edited to make this case pass.\n");
 }
 
